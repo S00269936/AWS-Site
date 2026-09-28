@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediBook</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+   <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- LOGIN -->
+<div id="login-screen" class="screen active">
+  <div class="login-card">
+    <div class="login-logo">MediBook</div>
+    <div class="login-sub">Appointment management portal</div>
+    <div class="role-tabs">
+      <button class="role-tab active" data-role="patient" onclick="selectRole('patient')">Patient</button>
+      <button class="role-tab" data-role="doctor" onclick="selectRole('doctor')">Doctor</button>
+    </div>
+    <div class="form-field">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="you@example.com" value="patient@demo.com"/>
+    </div>
+    <div class="form-field">
+      <label>Password</label>
+      <input type="password" id="login-pass" placeholder="••••••••" value="demo1234"/>
+    </div>
+    <button class="btn-primary patient" id="login-btn" onclick="doLogin()">Sign in as Patient</button>
+    <div class="demo-hint">Demo credentials are pre-filled — just click sign in</div>
+  </div>
+</div>
+
+<!-- PATIENT APP -->
+<div id="patient-screen" class="screen">
+  <div class="app-shell">
+    <div class="topbar">
+      <div class="topbar-brand">MediBook</div>
+      <div class="topbar-right">
+        <div class="avatar av-p">JD</div>
+        <span style="font-size:13px;font-weight:500;">Jane Doe</span>
+        <button class="btn-logout" onclick="logout()">Sign out</button>
+      </div>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab('p','p-overview',this)">Overview</button>
+      <button class="nav-tab" onclick="switchTab('p','p-doctors',this)">Find a Doctor</button>
+      <button class="nav-tab" onclick="switchTab('p','p-appointments',this)">My Appointments</button>
+    </div>
+    <div class="content">
+      <div id="p-overview" class="tab-panel active">
+        <div class="stat-row">
+          <div class="stat"><div class="stat-num p" id="stat-upcoming">—</div><div class="stat-label">Upcoming</div></div>
+          <div class="stat"><div class="stat-num t" id="stat-completed">—</div><div class="stat-label">Completed</div></div>
+          <div class="stat"><div class="stat-num a" id="stat-cancelled">—</div><div class="stat-label">Cancelled</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Upcoming appointments</div>
+          <div id="p-upcoming-list"><div class="loading"><span class="spinner"></span>Loading…</div></div>
+        </div>
+      </div>
+      <div id="p-doctors" class="tab-panel">
+        <div class="card">
+          <div class="card-title">Available doctors</div>
+          <div class="doctor-grid" id="doctor-grid"></div>
+        </div>
+      </div>
+      <div id="p-appointments" class="tab-panel">
+        <div class="card">
+          <div class="card-title">All my appointments</div>
+          <div id="p-all-list"><div class="loading"><span class="spinner"></span>Loading…</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DOCTOR APP -->
+<div id="doctor-screen" class="screen">
+  <div class="app-shell">
+    <div class="topbar">
+      <div class="topbar-brand doctor">MediBook</div>
+      <div class="topbar-right">
+        <div class="avatar av-d">SC</div>
+        <span style="font-size:13px;font-weight:500;">Dr. Sarah Chen</span>
+        <button class="btn-logout" onclick="logout()">Sign out</button>
+      </div>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab('d','d-overview',this)">Overview</button>
+      <button class="nav-tab" onclick="switchTab('d','d-appointments',this)">Appointments</button>
+    </div>
+    <div class="content">
+      <div id="d-overview" class="tab-panel active">
+        <div class="stat-row">
+          <div class="stat"><div class="stat-num a" id="d-stat-pending">—</div><div class="stat-label">Pending</div></div>
+          <div class="stat"><div class="stat-num p" id="d-stat-confirmed">—</div><div class="stat-label">Confirmed</div></div>
+          <div class="stat"><div class="stat-num t" id="d-stat-today">—</div><div class="stat-label">Today</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Today's appointments</div>
+          <div id="d-today-list"><div class="loading"><span class="spinner"></span>Loading…</div></div>
+        </div>
+      </div>
+      <div id="d-appointments" class="tab-panel">
+        <div class="card">
+          <div class="card-title">All assigned appointments</div>
+          <div id="d-all-list"><div class="loading"><span class="spinner"></span>Loading…</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOOK MODAL -->
+<div class="modal-overlay" id="book-modal">
+  <div class="modal">
+    <div class="modal-title">Book appointment</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:1rem;" id="book-doctor-name"></div>
+    <div id="book-error"></div>
+    <div class="form-field">
+      <label>Preferred date</label>
+      <input type="date" id="book-date" style="width:100%;padding:0.6rem 0.9rem;border-radius:8px;border:0.5px solid var(--border);font-family:inherit;font-size:13px;background:var(--surface2);"/>
+    </div>
+    <div style="margin-top:0.75rem;">
+      <label style="display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.05em;">Reason for visit</label>
+      <select id="book-reason">
+        <option>General checkup</option>
+        <option>Follow-up</option>
+        <option>New symptom</option>
+        <option>Prescription renewal</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('book-modal')">Cancel</button>
+      <button class="btn-confirm p" id="book-submit-btn" onclick="confirmBook()">Book appointment</button>
+    </div>
+  </div>
+</div>
+
+<!-- CANCEL MODAL -->
+<div class="modal-overlay" id="cancel-modal">
+  <div class="modal">
+    <div class="modal-title">Cancel appointment?</div>
+    <div style="font-size:13px;color:var(--muted);">This will cancel the appointment. The doctor will be notified.</div>
+    <div id="cancel-error"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('cancel-modal')">Keep it</button>
+      <button class="btn-confirm r" id="cancel-submit-btn" onclick="confirmCancel()">Yes, cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTE MODAL -->
+<div class="modal-overlay" id="note-modal">
+  <div class="modal">
+    <div class="modal-title">Add / edit note</div>
+    <div id="note-error"></div>
+    <textarea id="note-text" placeholder="Clinical notes, follow-up instructions…"></textarea>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('note-modal')">Cancel</button>
+      <button class="btn-confirm t" id="note-submit-btn" onclick="confirmNote()">Save note</button>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS MODAL -->
+<div class="modal-overlay" id="status-modal">
+  <div class="modal">
+    <div class="modal-title">Update status</div>
+    <div id="status-error"></div>
+    <select id="status-select">
+      <option value="pending">Pending</option>
+      <option value="confirmed">Confirmed</option>
+      <option value="completed">Completed</option>
+      <option value="cancelled">Cancelled</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('status-modal')">Cancel</button>
+      <button class="btn-confirm t" id="status-submit-btn" onclick="confirmStatus()">Update</button>
+    </div>
+  </div>
+</div>
+<script src="script.js"></script>
+
+</body>
+</html>
